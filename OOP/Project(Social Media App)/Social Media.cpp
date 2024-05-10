@@ -1,10 +1,11 @@
 #include <iostream>
-#include <vector>
 #include <string>
 #include <ctime>
+
 using namespace std;
 
 const int MAX = 10;
+
 class Uid {
 private:
 	string id;
@@ -19,9 +20,6 @@ public:
 
 	Uid(string initial) //initiaiser is used to differentiate between Uid of pot, comments etc
 	{
-		
-		int val = rand() % 100;
-		
 		if (initial == "P")
 		{
 			id = initial + to_string(post);
@@ -40,19 +38,21 @@ public:
 	}
 };
 
-class Post: public Uid{
+class Post : public Uid {
 private:
 	time_t t;// time add krna hai bc fujtionality requires so :(
 	string text;
-	string* likes = new string[10]; // might replace it with user ki array ;<
+	string* likes = new string[MAX];
+	Comment** com = new Comment * [MAX];
+	int comm = 0;
 public:
 	Post(string Text) :Uid("P"), text(Text) {}
-
 	string getText() const
 	{
 		return text;
 	}
 	 
+
 	~Post()
 	{
 		delete[] likes;
@@ -60,12 +60,44 @@ public:
 	}
 };
 
-class User : public Uid {
+class Page : public Uid{
 private:
-	User** friends = new User * [MAX];
+	Post** post = new Post * [MAX];
+	string name;
+	int posts = 0;
+public:
+	
+	Page(string Name) : Uid("G"), name(Name) {}
+
+	string getPageName() const
+	{
+		return name;
+	}
+
+	void createPost(string text)
+	{
+		post[posts] = new Post(text);
+		posts++;
+	}
+};
+
+class Comment {
+private:
+	static int num;
+	string text;
+	string owner;
+public:
+	Comment(string txt, string id) : text(txt), owner(id) {}
+};
+
+class User : public Uid{
+private:
+	string* friends = new string [MAX];
 	string name;
 	Post** post = new Post * [MAX];
 	int posts = 0;
+	Page** page = new Page * [MAX];
+	int pages = 0;
 public:
 	User(string Name) : Uid("U"), name(Name) {}
 
@@ -73,6 +105,12 @@ public:
 	{
 		post[posts] = new Post(text);
 		posts++;
+	}
+
+	void createPage(string txt)
+	{
+		page[pages] = new Page(txt);
+		pages++;
 	}
 
 	string getName() const
@@ -84,26 +122,29 @@ public:
 	{
 		for (int i = 0; i < posts; ++i)
 		{
-			cout << post[i]->getId() << endl << post[i]->getText() << endl;
+			cout << post[i]->getText() << endl;
 		}
+	}
+	~User()
+	{
+		delete[] friends;
+		friends = nullptr;
+		for (int i = 0; i < posts; ++i)
+		{
+			delete[] post[i];
+		}
+		delete[] post;
+		post = nullptr;
 	}
 };
 
-
+int Comment::num = 0;
 int Uid::page = 0;
 int Uid::user = 0;
 int Uid::post = 0;
 
-
 int main()
 {
-	User u1("Faiq");
-	User u2("Ali");
-	cout << u1.getId() << endl << u2.getId() << endl;
-	u1.createPost("General Asim Munir");
-	u2.createPost("Pakitan Zindabad");
-	u1.createPost("PTI lai loi");
-	u2.createPost("Pak Debate Forum");
-	u1.printPost();
-	u2.printPost();
+	User u1("Ali");
+	cout << u1.getId();
 }
