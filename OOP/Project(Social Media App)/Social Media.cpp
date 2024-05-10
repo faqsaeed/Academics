@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <ctime>
+#include <fstream>
 
 using namespace std;
 
@@ -38,6 +39,16 @@ public:
 	}
 };
 
+class Comment {
+private:
+	static int num;
+	string text;
+	string owner;
+public:
+	Comment(string txt, string id) : text(txt), owner(id) {}
+};
+
+
 class Post : public Uid {
 private:
 	time_t t;// time add krna hai bc fujtionality requires so :(
@@ -51,12 +62,24 @@ public:
 	{
 		return text;
 	}
-	 
-
+	
+	void addComment(string text)
+	{
+		string a = this->getId();
+		com[comm] = new Comment(text, a);
+		comm++;
+	}
+	
 	~Post()
 	{
 		delete[] likes;
 		likes = nullptr;
+		for (int i = 0; i < comm; ++i)
+		{
+			delete[] com[i];
+		}
+		delete[] com;
+		com = nullptr;
 	}
 };
 
@@ -79,15 +102,16 @@ public:
 		post[posts] = new Post(text);
 		posts++;
 	}
-};
 
-class Comment {
-private:
-	static int num;
-	string text;
-	string owner;
-public:
-	Comment(string txt, string id) : text(txt), owner(id) {}
+	~Page()
+	{
+		for (int i = 0; i < posts; ++i)
+		{
+			delete[] post[i];
+		}
+		delete[] post;
+		post = nullptr;
+	}
 };
 
 class User : public Uid{
@@ -129,6 +153,7 @@ public:
 	{
 		delete[] friends;
 		friends = nullptr;
+
 		for (int i = 0; i < posts; ++i)
 		{
 			delete[] post[i];
@@ -138,6 +163,23 @@ public:
 	}
 };
 
+class SocialMediaApp{
+private:
+	User** users = new User * [MAX];
+	string* password = new string[MAX];
+	fstream f;
+public:
+	
+	
+	SocialMediaApp()
+	{
+		f.open("Data.txt");
+	}
+	void Run()
+	{}
+
+};
+
 int Comment::num = 0;
 int Uid::page = 0;
 int Uid::user = 0;
@@ -145,6 +187,6 @@ int Uid::post = 0;
 
 int main()
 {
-	User u1("Ali");
-	cout << u1.getId();
+	SocialMediaApp instance;
+	instance.Run();
 }
