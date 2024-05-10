@@ -7,6 +7,47 @@ using namespace std;
 
 const int MAX = 10;
 
+
+class Date
+{
+private:
+	int day;
+	int month;
+	int year;
+
+public:
+
+	Date()
+	{
+		day = 17;
+		month = 4;
+		year = 2024;
+	}
+
+	void setDate(int d, int m, int y)
+	{
+		day = d;
+		month = m;
+		year = y;
+	}
+
+	int dateToDays() const
+	{
+		return year * 365 + month * 30 + day;
+	}
+
+
+	void displayDate() const
+	{
+		cout << day << "/" << month << "/" << year;
+	}
+
+	bool isSameDay(Date& other) const
+	{
+		return day == other.day && month == other.month && year == other.year;
+	}
+};
+
 class Uid {
 private:
 	string id;
@@ -51,7 +92,7 @@ public:
 
 class Post : public Uid {
 private:
-	time_t t;// time add krna hai bc fujtionality requires so :(
+	Date t;
 	string text;
 	string* likes = new string[MAX];
 	Comment** com = new Comment * [MAX];
@@ -63,6 +104,16 @@ public:
 		return text;
 	}
 	
+	void setDate(int d, int m, int y)
+	{
+		t.setDate(d, m, y);
+	}
+	
+	void getDate() const
+	{
+		t.displayDate();
+	}
+
 	void addComment(string text)
 	{
 		string a = this->getId();
@@ -119,16 +170,18 @@ private:
 	string* friends = new string [MAX];
 	string name;
 	Post** post = new Post * [MAX];
-	int posts = 0;
+	static int posts;
 	Page** page = new Page * [MAX];
-	int pages = 0;
+	static int pages;
 public:
 	User(string Name) : Uid("U"), name(Name) {}
 
-	void createPost(string text)
+	void createPost(string text, int y, int m , int d)
 	{
 		post[posts] = new Post(text);
+		post[posts]->setDate(d, m, y);
 		posts++;
+	
 	}
 
 	void createPage(string txt)
@@ -146,7 +199,9 @@ public:
 	{
 		for (int i = 0; i < posts; ++i)
 		{
-			cout << post[i]->getText() << endl;
+			cout << post[i]->getId() << "\t" << name << " posted on "; 
+			post[i]->getDate();
+			cout << "\n\t\t" << post[i]->getText() << endl;
 		}
 	}
 	~User()
@@ -168,23 +223,120 @@ private:
 	User** users = new User * [MAX];
 	string* password = new string[MAX];
 	fstream f;
+	Date today;
 public:
 	
 	
 	SocialMediaApp()
 	{
 		f.open("Data.txt");
+		string name;
+		for (int i = 0; i < MAX; ++i)
+		{
+			getline(f, name);
+			users[i] = new User(name);
+			getline(f, name);
+			password[i] = name;
+			for (int i = 0; i < 5; ++i)
+			{
+				int y, m, d;
+				f >> d >> m >> y;
+				string line;
+				getline(f, line);
+				cout << "hi\n";
+				cout << line;
+				users[i]->createPost(line, d, m, y);
+				cout << "Hello\n";
+				//users[i]->printPost();
+			}
+		}
 	}
-	void Run()
-	{}
 
+	int authentication()
+	{
+		string name, pass;
+		cout << "\nEnter Username:\t";
+		getline(cin, name);
+
+		cout << "Enter Password:\t";
+		getline(cin, pass);
+
+		for (int i = 0; i < MAX; i++)
+		{
+			if (name == users[i]->getName() && pass == password[i])
+			{
+				system("CLS");
+				cout << "\t\tWelcome " << users[i]->getName() << endl;
+				return i;
+			}
+		}
+		system("CLS");
+		cout << "\n\t\tIncorrect Username or Password (Both Username and Password are case senstive)\nTry Again\n\n";
+		authentication();
+	}
+
+	void Run()
+	{
+		cout << "\t\tWelcome to the Social Media App\n\n";
+		int choice = 0;
+		int currentUser = authentication();
+		while (choice >= 0 && choice <= 10)
+		{
+			cout << endl;
+			cout << "\tTo Change User Enter 0\n";
+			cout << "\tTo Go To Home Page Enter 1\n";
+			cout << "\tTo View Your Profile Enter 2\n";
+			cout << "\tTo View Your Friend List Enter 3\n";
+			cout << "\tTo View a Page Enter 4\n";
+			//cout << "\tTo Enter 5\n";
+			//cout << "\tTo Enter 6\n";
+			//cout << "\tTo Enter 7\n";
+			//cout << "\tTo Enter 8\n";
+			//cout << "\tTo Enter 9\n";
+			cout << "\tTo Exit Enter 10 or gretaer\n";
+			cin >> choice;
+			switch (choice)
+			{
+			case 0:
+				cout << "\n\n\tLogged Out Succcesfully\n\n";
+				cin.ignore();
+				system("CLS");
+				currentUser = authentication();
+				continue;
+				break;
+			case 1:
+				
+				break;
+			case 2:
+				users[currentUser]->printPost();
+				break;
+			case 3:
+				break;
+			case 4:
+				break;
+			//case 5:
+			//	break;
+			//case 6:
+			//	break;
+			//case 7:
+			//	break;
+			//case 8:
+			//	break;
+			//case 9:
+			//	break;
+			//default:
+			//	break;
+			}
+		}
+	}
 };
 
 int Comment::num = 0;
 int Uid::page = 0;
 int Uid::user = 0;
 int Uid::post = 0;
-
+int User::pages = 0;
+int User::posts = 0;
 int main()
 {
 	SocialMediaApp instance;
