@@ -15,6 +15,20 @@ private:
 
 public:
 
+	int getDay() const 
+	{
+		return day;
+	}
+
+	int getMonth() const 
+	{
+		return month;
+	}
+
+	int getYear() const 
+	{
+		return year;
+	}
 	void setDate(int d, int m, int y)
 	{
 		day = d;
@@ -73,11 +87,13 @@ private:
 public:
 	Comment(string txt, string id) : text(txt), owner(id) {}
 
-	string getText() const {
+	string getText() const 
+	{
 		return text;
 	}
 
-	string getOwner() const {
+	string getOwner() const
+	{
 		return owner;
 	}
 };
@@ -118,10 +134,9 @@ public:
 		t.setDate(d, m, y);
 	}
 
-	void addComment(string text)
+	void addComment(string text, string id)
 	{
-		string a = this->getId();
-		com[comm] = new Comment(text, a);
+		com[comm] = new Comment(text, id);
 		comm++;
 	}
 
@@ -187,10 +202,29 @@ public:
 		return posts;
 	}
 
-	void createPost(string text)
+	void createPost(const string& text, int d, int m, int y)
 	{
-		post[posts] = new Post(text);
-		posts++;
+		if (posts < MAX)
+		{
+			post[posts] = new Post(text);
+			post[posts]->setDate(d, m, y);
+			posts++;
+		}
+		else
+		{
+			cout << "Maximum number of posts reached." << endl;
+		}
+
+	}
+
+	void printPost() const
+	{
+		for (int i = 0; i < posts; ++i)
+		{
+			cout << post[i]->getId() << "\t" << name << " posted on ";
+			post[i]->displayDate();
+			cout << "\t'" << post[i]->getText() << "'\n";
+		}
 	}
 
 	~Page()
@@ -210,9 +244,9 @@ private:
 	string name;
 	Post** post = new Post * [MAX];
 	int posts;
-	Page** likedPages = new Page * [MAX];
+	string* likedPages = new string [MAX];
 	int numLikedPages;
-	Page** page = new Page * [MAX];
+	Page* page;
 	int pages;
 	int frnd;
 public:
@@ -222,6 +256,15 @@ public:
 		frnd = 0;
 	}
 
+	string getPageName() const
+	{
+		return this->page->getPageName();
+	}
+
+	Page* getPage() const
+	{
+		return page;
+	}
 	string* returnFriends() const
 	{
 		return friends;
@@ -252,7 +295,7 @@ public:
 	{
 		for (int i = 0; i < numLikedPages; ++i)
 		{
-			if (likedPages[i]->getId() == pageID)
+			if (likedPages[i] == pageID)
 			{
 				return true;
 			}
@@ -268,8 +311,7 @@ public:
 
 	void createPage(string txt)
 	{
-		page[pages] = new Page(txt);
-		pages++;
+		page = new Page(txt);
 	}
 
 	string getName() const
@@ -286,6 +328,18 @@ public:
 			cout << "\t'" << post[i]->getText() << "'\n";
 		}
 	}
+
+	bool likePage(Page* page) 
+	{
+		if (numLikedPages < MAX) {
+			likedPages[numLikedPages] = page->getId();
+			cout << "You have liked the page '" << page->getPageName() << "'.\n";
+			numLikedPages++;
+			return true;
+		}
+	
+	}
+
 	~User()
 	{
 		delete[] friends;
@@ -312,6 +366,7 @@ public:
 	{
 		f.open("Data.txt");
 		string name;
+		int y, m, d;
 		for (int i = 0; i < MAX; ++i)
 		{
 			getline(f, name);
@@ -320,7 +375,6 @@ public:
 			password[i] = name;
 			for (int j = 0; j < 5; ++j)
 			{
-				int y, m, d;
 				f >> d >> m >> y;
 				getline(f, name);
 				users[i]->createPost(name, d, m, y);
@@ -330,10 +384,39 @@ public:
 				getline(f, name);
 				users[i]->addFriend(name);
 			}
+			getline(f, name);
+			users[i]->createPage(name);
+			for (int k = 0; k < 2; ++k)
+			{
+				f >> d >> m >> y;
+				getline(f, name);
+				users[i]->getPage()->createPost(name, d, m, y);
+			}
 		}
 	}
 
-	void viewHomeOfCurrentUser(int CurrentUser) {
+	void viewPagesToLike(int CurrentUser) 
+	{
+		cout << "Available Pages to Like:\n";
+		for (int i = 0; i < MAX; ++i)
+		{
+			cout << i + 1 << ". " << users[i]->getPageName() << endl;
+		}
+
+		int choice;
+		cout << "Enter the number of the page you want to like (or 0 to go back): ";
+		cin >> choice;
+
+		if (choice >= 1 && choice <= MAX) {
+			users[CurrentUser]->likePage(users[choice - 1]->getPage());
+		}
+		else if (choice != 0) {
+			cout << "Invalid choice. Please try again.\n";
+		}
+	}
+
+	void viewHomeOfCurrentUser(int CurrentUser) 
+	{
 		cout << "\nPosts shared by friends in the last 24 hours:\n";
 		int num = 0;
 		for (int i = 0; i < MAX; ++i)
@@ -355,18 +438,19 @@ public:
 		cout << "\nPosts shared by liked pages in the last 24 hours:\n";
 		for (int i = 0; i < MAX; ++i)
 		{
-			if (users[CurrentUser]->isPageLiked(users[i]->getId()))
+			if (users[CurrentUser]->isPageLiked(users[i]->getPage()->getId()))
 			{
-				for (int j = 0; j < 5; ++j)
+				for (int j = 0; j < 2; ++j)
 				{
-					if (users[i]->getPost(j)->getDate() == today)
+					if (users[i]->getPage()->getPost(j)->getDate() == today)
 					{
-						cout << users[i]->getName() << ": " << users[i]->getPost(j)->getText() << endl;
+						cout << users[i]->getPage()->getPageName() << ": " << users[i]->getPage()->getPost(j)->getText() << endl;
 					}
 				}
 			}
 		}
 	}
+
 
 	void viewLikesOfPost()
 	{
@@ -469,11 +553,35 @@ public:
 		}
 	}
 
+	void createMemory(int current)
+	{
+		string id;
+		cout << "Enter the id of the post you want to create a reference to\t";
+		cin >> id;
+		cin.ignore();
+		string text;
+		getline(cin, text);
+		for (int i = 0; i < MAX; ++i)
+		{
+			for (int j = 0; j < 5; ++j)
+			{
+				if (users[i]->getPost(j)->getId() == id)
+				{
+					text = text + users[i]->getPost(j)->getText();
+				}
+
+			}
+		}
+		users[current]->createPost(text, today.getDay(), today.getMonth(), today.getYear());
+		
+	}
+
 	void commentOnPost(int current)
 	{
 		string postID;
 		cout << "Enter the ID of the post you want to like: ";
 		cin >> postID;
+		cin.ignore();
 		string text;
 		cout << "Enter the text of the comment\t";
 		getline(cin, text);
@@ -483,7 +591,7 @@ public:
 			{
 				if (users[i]->getPost(j)->getId() == postID)
 				{
-					users[i]->getPost(j)->addComment(text);
+					users[i]->getPost(j)->addComment(text, users[current]->getId());
 				}
 			}
 		}
@@ -503,6 +611,8 @@ public:
 		cin.ignore();
 		cout << "\t\tWelcome to the Social Media App\n\n";
 		int choice = 0;
+		int ch = 0;
+		int c;
 		int currentUser = authentication();
 		while (choice >= 0 && choice <= 10)
 		{
@@ -512,7 +622,7 @@ public:
 			cout << "To View Your Profile Enter 2\n";
 			cout << "To View Your Friend List Enter 3\n";
 			cout << "To View a Page Enter 4\n";
-			cout << "To Like a Post Enter 5\n";
+			cout << "To Like a Post or Page Enter 5\n";
 			cout << "To View Likes of a Post Enter 6\n";
 			cout << "To Comment on a Post Enter 7\n";
 			cout << "To View a Post Enter 8\n";
@@ -543,11 +653,31 @@ public:
 				printFriends(currentUser);
 				break;
 			case 4:
+				system("CLS");
+				cout << "Available Pages to Like:\n";
+				for (int i = 0; i < MAX; ++i)
+				{
+					cout << i + 1 << ". " << users[i]->getPageName() << endl;
+				}
+				cout << "Enter page Number to view\t";
+				cin >> c;
+				users[c -1]->getPage()->printPost();
 				break;
 			case 5:
 				system("CLS");
-				likePost(currentUser);
-				break;
+
+				cout << "for page enter 0 and for post enter 1\t";
+				cin >> ch;
+				if (ch == 1)
+				{
+					likePost(currentUser);
+					break;
+				}
+				else if (ch == 0)
+				{
+					viewPagesToLike(currentUser);
+					break;
+				}
 			case 6:
 				system("CLS");
 				viewLikesOfPost();
@@ -561,6 +691,8 @@ public:
 				viewPost();
 				break;
 			case 9:
+				system("CLS");
+				createMemory(currentUser);
 				break;
 			default:
 				return;
