@@ -1,0 +1,74 @@
+/* About.css */
+.about-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #ADD8E6 0%, #b3ebf2 100%);
+    font-family: 'Arial', sans-serif;
+  }
+  
+  .about-card {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    padding: 30px;
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+  }
+  
+  .about-title {
+    color: #333;
+    margin-bottom: 30px;
+    font-size: 28px;
+  }
+  
+  .user-info {
+    margin-bottom: 30px;
+    text-align: left;
+  }
+  
+  .info-row {
+    display: flex;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .info-label {
+    font-weight: bold;
+    width: 100px;
+    color: #555;
+  }
+  
+  .info-value {
+    flex: 1;
+    color: #333;
+  }
+  
+  .logout-button {
+    background-color: #ff8fa3;
+    border: none;
+    border-radius: 5px;
+    color: black;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 10px 20px;
+    transition: background-color 0.3s;
+    width: 100%;
+  }
+  
+  .logout-button:hover {
+    background-color: #ff8fa3;
+  }
+  
+  .about-card.error {
+    color: #721c24;
+    background-color: #060750;
+    border-color: #3a1519;
+  }
+  
+  .about-card.error h1 {
+    color: #721c24;
+  }
