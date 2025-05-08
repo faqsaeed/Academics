@@ -1,0 +1,15 @@
+We use a shared turn variable that allows only one thread at a time to enter the 
+critical section. Every thread has a unique ID (0, 1, 2, ... N−1). 
+Only the thread whose ID matches the current turn value is allowed to enter the 
+critical section.
+
+Once done, it updates the turn to the next thread.
+How It Works
+
+    Each thread waits until turn == id.
+    When it's their turn:
+        The thread enters the critical section.
+        It updates turn = (turn + 1) % total_threads.
+
+    This process continues until all threads finish.
+
